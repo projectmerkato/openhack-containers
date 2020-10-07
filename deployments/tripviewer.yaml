@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tripsviewer-deployment
+  labels:
+    app: trips-viewer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trips-viewer
+  template:
+    metadata:
+      labels:
+        app: trips-viewer
+    spec:
+      containers:
+      - name: trips-viewer
+        imagePullPolicy: Always
+        image: registrykco9435.azurecr.io/tripinsights/tripsviewer:1.0
+        env:
+        - name: TRIPS_API_ENDPOINT
+          value: "http://endpoint.default.svc.cluster.local"
+        - name: USERPROFILE_API_ENDPOINT
+          value: "http://userprofile-api.default.svc.cluster.local"
+        ports:
+        - containerPort: 80
+        # resources:
+        #   requests: # minimum resources required
+        #     cpu: 250m
+        #     memory: 64Mi
+        #   limits: # maximum resources allocated
+        #     cpu: 500m
+        #     memory: 256Mi
+        # readinessProbe: # is the container ready to receive traffic?
+        #   httpGet:
+        #     port: 80
+        #     path: /healthz
+        # livenessProbe: # is the container healthy?
+        #   httpGet:
+        #     port: 80
+        #     path: /healthz
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: tripviewer-svc
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: trips-viewer
+
