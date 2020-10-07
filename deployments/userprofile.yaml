@@ -16,52 +16,51 @@ spec:
     spec:
       containers:
       - name: userprofile-api
-        image: registrykco9435.azurecr.io/userprofile:1.0
+        image: registrykco9435.azurecr.io/tripinsights/userprofile:1.0
         imagePullPolicy: Always
+        ports:
+          - containerPort: 80
         env:
         - name: PORT
-          value: 80
-        - name: CONFIG_FILES_PATH
-          value: "/secrets"
+          value: "80"
+        # - name: CONFIG_FILES_PATH
+        #   value: "/secrets"
         - name: SQL_USER
           valueFrom:
             secretKeyRef:
-              name: SqlSecret # the name of the Kubernetes secret containing the data
+              name: sqlsecret # the name of the Kubernetes secret containing the data
               key: SQL_USER
         - name: SQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: SqlSecret # the name of the Kubernetes secret containing the data
+              name: sqlsecret # the name of the Kubernetes secret containing the data
               key: SQL_PASSWORD
         - name: SQL_SERVER
           valueFrom:
             secretKeyRef:
-              name: SqlSecret # the name of the Kubernetes secret containing the data
+              name: sqlsecret # the name of the Kubernetes secret containing the data
               key: SQL_SERVER
         - name: SQL_DBNAME
           valueFrom:
             secretKeyRef:
-              name: SqlSecret # the name of the Kubernetes secret containing the data
+              name: sqlsecret # the name of the Kubernetes secret containing the data
               key: SQL_DBNAME
-        ports:
-        - containerPort: 80
-        resources:
-          requests: # minimum resources required
-            cpu: 250m
-            memory: 64Mi
-          limits: # maximum resources allocated
-            cpu: 500m
-            memory: 256Mi
-        readinessProbe: # is the container ready to receive traffic?
-          httpGet:
-            port: 80
-            path: /healthz
-        livenessProbe: # is the container healthy?
-          httpGet:
-            port: 80
-            path: /healthz
+        # resources:
+        #   requests: # minimum resources required
+        #     cpu: 250m
+        #     memory: 64Mi
+        #   limits: # maximum resources allocated
+        #     cpu: 500m
+        #     memory: 256Mi
+        # readinessProbe: # is the container ready to receive traffic?
+        #   httpGet:
+        #     port: 80
+        #     path: /healthz
+        # livenessProbe: # is the container healthy?
+        #   httpGet:
+        #     port: 80
+        #     path: /healthz
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
