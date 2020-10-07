@@ -1,0 +1,35 @@
+
+// Create a DB Container
+docker run -d --network myInsurence-net -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=abc@123!" -p 1433:1433 --name myinsurancesql -h myinsurancesql  -d  mcr.microsoft.com/mssql/server:2017-latest
+
+//Create the DB
+docker exec --network myInsurence-net  myinsurancesql /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P abc@123! -Q "CREATE DATABASE mydrivingDB"
+
+// Import data the mydrivingDB 
+docker run --network  myInsurence-net -e SQLFQDN=myinsurancesql -e SQLUSER=SA -e SQLPASS=abc@123! -e SQLDB=mydrivingDB openhack/data-load:v1
+
+// Build Image
+docker build -f Dockerfile -t "tripinsights/poi:1.0" .
+
+// RUN the app
+docker run -d --network myInsurence-net -p 8080:80 --name poi -e "SQL_PASSWORD=abc@123!" -e "SQL_SERVER=myinsurancesql" -e "SQL_USER=sa" -e "ASPNETCORE_ENVIRONMENT=Local" tripinsights/poi:1.0
+
+
+//Trips App
+
+docker build -f Dockerfile -t "tripinsights/trips:1.0" .
+
+
+# Example 1 - Set config values via environment variables
+docker run -d -p 8080:80 --name trips -e "SQL_PASSWORD=$SQL_PASSWORD" -e "SQL_SERVER=$SQL_SERVER" -e "OPENAPI_DOCS_URI=http://$EXTERNAL_IP" tripinsights/trips:1.0
+
+# Example 2 - Set configuration via files. Server will expect config values in files like /secrets/SQL_USER.
+# The secrets must be mounted from a host volume (eg. $HOST_FOLDER) into the /secrets container volume.
+docker run -d -p 8080:80 --name trips -v $HOST_FOLDER:/secrets tripinsights/trips:1.0
+
+
+
+az login
+az acr login --name registrykco9435
+
+az acr build --registry $ACR_NAME --image helloacrtasks:v1 .
